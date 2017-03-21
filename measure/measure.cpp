@@ -1,7 +1,13 @@
 // measure.cpp : Defines the entry point for the console application.
 //
 
-#include "stdafx.h"
+#include "targetver.h"
+#include "measure.hpp"
+
+#include <stdio.h>
+#include <tchar.h>
+#include <iostream>
+#include <thread>
 
 int main()
 {
