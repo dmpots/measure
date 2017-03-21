@@ -6,9 +6,8 @@
 #pragma once
 
 #include "targetver.h"
-#include "measure.hpp"
 
-#include <stdio.h>
-#include <tchar.h>
-#include <iostream>
-#include <thread>
+// Headers for CppUnitTest
+#include "CppUnitTest.h"
+
+// TODO: reference additional headers your program requires here
