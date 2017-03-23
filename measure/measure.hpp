@@ -75,7 +75,7 @@ public:
     m_end = hrc::now();
   }
 
-  duration Elapsed() {
+  duration Elapsed() const {
     return m_end - m_start;
   }
   
@@ -84,3 +84,57 @@ private:
   timepoint m_end;
 };
 
+class MemorySizePrinter {
+public:
+  enum Size {
+    Bytes   = 1,
+    KiBytes = Bytes   * 1024,
+    MiBytes = KiBytes * 1024,
+    GiBytes = MiBytes * 1024,
+  };
+
+  struct MemoryBreakdown {
+    unsigned Gigabytes;
+    unsigned Megabytes;
+    unsigned Kilobytes;
+    unsigned Bytes;
+
+    MemoryBreakdown(size_t bytes) {
+      Gigabytes = ExtractSize<GiBytes>(&bytes);
+      Megabytes = ExtractSize<MiBytes>(&bytes);
+      Kilobytes = ExtractSize<KiBytes>(&bytes);
+      Bytes     = ExtractSize<Size::Bytes>(&bytes);
+    }
+  };
+    
+  template <unsigned Size>
+  static unsigned ExtractSize(size_t *pBytes) {
+    size_t &bytes = *pBytes;
+    unsigned count = bytes / Size;
+    bytes -= count * Size;
+    return count;
+  }
+  
+  static std::string PrettyPrintMemorySize(size_t bytes) {
+    std::ostringstream ss;
+    PrettyPrintMemorySize(ss, bytes);
+    return ss.str();
+  }
+  
+  static void PrettyPrintMemorySize(std::ostream &out, size_t bytes) {
+    MemoryBreakdown mbd(bytes);
+    out << " " << bytes << " bytes (";
+    WriteMemorySize(out, mbd.Gigabytes, " GiB");
+    WriteMemorySize(out, mbd.Megabytes, " MiB");
+    WriteMemorySize(out, mbd.Kilobytes, " KiB");
+    WriteMemorySize(out, mbd.Bytes,     " B");
+    out << " )";
+  }
+
+private:
+  static void WriteMemorySize(std::ostream &out, unsigned component, const std::string &name) {
+    if (component) {
+      out << " " << component << name;
+    }
+  }
+};

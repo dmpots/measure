@@ -9,6 +9,7 @@
 #include <iostream>
 #include <thread>
 #include <Windows.h>
+#include <Psapi.h>
 
 struct RunResult {
   bool succeeded;
@@ -42,9 +43,48 @@ RunResult RunProcess(wchar_t *command) {
   return RunResult{ true, pi };
 }
 
+static void PrintMemStats(const PROCESS_INFORMATION &pi) {
+  PROCESS_MEMORY_COUNTERS pmc;
+  if (GetProcessMemoryInfo(pi.hProcess, &pmc, sizeof(pmc)))
+  {
+
+    std::cout << "\tPageFaultCount: " << MemorySizePrinter::PrettyPrintMemorySize(pmc.PeakWorkingSetSize) << std::endl;
+#if 0
+    printf("\tPageFaultCount: 0x%08X\n", pmc.PageFaultCount);
+    printf("\tPeakWorkingSetSize: 0x%08X\n",
+      pmc.PeakWorkingSetSize);
+    printf("\tWorkingSetSize: 0x%08X\n", pmc.WorkingSetSize);
+    printf("\tQuotaPeakPagedPoolUsage: 0x%08X\n",
+      pmc.QuotaPeakPagedPoolUsage);
+    printf("\tQuotaPagedPoolUsage: 0x%08X\n",
+      pmc.QuotaPagedPoolUsage);
+    printf("\tQuotaPeakNonPagedPoolUsage: 0x%08X\n",
+      pmc.QuotaPeakNonPagedPoolUsage);
+    printf("\tQuotaNonPagedPoolUsage: 0x%08X\n",
+      pmc.QuotaNonPagedPoolUsage);
+    printf("\tPagefileUsage: 0x%08X\n", pmc.PagefileUsage);
+    printf("\tPeakPagefileUsage: 0x%08X\n",
+      pmc.PeakPagefileUsage);
+#endif
+  }
+}
+
+static void PrintTimeStats(const StopWatch &sw) {
+  std::cout << "\n" << "Finished in"
+            << DurationPrinter::PrettyPrintDuration(sw.Elapsed())
+            << std::endl;
+}
+
 struct Options {
   std::unique_ptr<wchar_t[]> Command;
   bool ShowMemStats;
+  bool ShowTimeStats;
+
+  Options() 
+  : Command(nullptr)
+  , ShowMemStats(true)
+  , ShowTimeStats(true)
+  { }
 };
 
 static void PrintUsageAndExit(int exitCode = EXIT_FAILURE) {
@@ -91,7 +131,13 @@ int wmain(int argc, wchar_t *argv[])
     exit(EXIT_FAILURE);
   }
 
-  std::cout << "\n" << "Finished in" << DurationPrinter::PrettyPrintDuration(sw.Elapsed()) << std::endl;
+  if (options.ShowTimeStats) {
+    PrintTimeStats(sw);
+  }
+
+  if (options.ShowMemStats) {
+    PrintMemStats(proc.pi);
+  }
   
   // Close process and thread handles. 
   CloseHandle(proc.pi.hProcess);
