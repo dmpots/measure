@@ -94,10 +94,10 @@ public:
   };
 
   struct MemoryBreakdown {
-    unsigned Gigabytes;
-    unsigned Megabytes;
-    unsigned Kilobytes;
-    unsigned Bytes;
+    size_t Gigabytes;
+    size_t Megabytes;
+    size_t Kilobytes;
+    size_t Bytes;
 
     MemoryBreakdown(size_t bytes) {
       Gigabytes = ExtractSize<GiBytes>(&bytes);
@@ -108,9 +108,9 @@ public:
   };
     
   template <unsigned Size>
-  static unsigned ExtractSize(size_t *pBytes) {
+  static size_t ExtractSize(size_t *pBytes) {
     size_t &bytes = *pBytes;
-    unsigned count = bytes / Size;
+    size_t count = bytes / Size;
     bytes -= count * Size;
     return count;
   }
@@ -132,7 +132,7 @@ public:
   }
 
 private:
-  static void WriteMemorySize(std::ostream &out, unsigned component, const std::string &name) {
+  static void WriteMemorySize(std::ostream &out, size_t component, const std::string &name) {
     if (component) {
       out << " " << component << name;
     }
